@@ -11,6 +11,10 @@ public class Player : MonoBehaviour
     float accelerationTimeGrounded = 0.1f;
     float moveSpeed = 8;
 
+    // Quality of life jumping variables
+    float jumpPressedRemember;
+    float jumpPressedRememberTime = 0.25f;
+
     float jumpVelocity;
     float gravity;
     Vector3 velocity;
@@ -37,9 +41,17 @@ public class Player : MonoBehaviour
 
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
-        if (Input.GetButtonDown("Jump") && controller.collisions.below)
+        // Sets jumpPressedRemember when the player presses jump
+        if (Input.GetButtonDown("Jump"))
+        {
+            jumpPressedRemember = jumpPressedRememberTime;
+        }
+        jumpPressedRemember -= Time.deltaTime;
+
+        if (jumpPressedRemember > 0 && controller.collisions.below)
         {
             velocity.y = jumpVelocity;
+            jumpPressedRemember = 0;
         }
 
         float targetVelocityX = input.x * moveSpeed;

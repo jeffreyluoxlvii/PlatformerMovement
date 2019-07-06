@@ -64,6 +64,7 @@
     <Compile Include="Assets\Movement.cs" />
     <Compile Include="Assets\NewBehaviourScript.cs" />
     <Compile Include="Assets\Scripts\Controller2D.cs" />
+    <Compile Include="Assets\Scripts\PlatformController.cs" />
     <Compile Include="Assets\Scripts\Player.cs" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>/Users/jeffreyluo/Desktop/Games/PlatformerTest/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
