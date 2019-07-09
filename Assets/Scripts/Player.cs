@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,7 +21,7 @@ public class Player : MonoBehaviour
     public Vector2 wallJumpClimb;
     public Vector2 wallJumpOff;
     public Vector2 wallJumpLeap;
-    public float wallStickTime = 0.10f;
+    public float wallStickTime = 0.20f;
     float timeToWallUnstick;
 
     float maxJumpVelocity;
@@ -35,7 +36,6 @@ public class Player : MonoBehaviour
     bool wallSliding;
     int wallDirX;
 
-    // Start is called before the first frame update
     void Start()
     {
         controller = GetComponent<Controller2D>();
@@ -44,6 +44,15 @@ public class Player : MonoBehaviour
         minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(gravity) * minJumpHeight);
         print("Gravity: " + gravity + " Jump Velocity: " + maxJumpVelocity);
     }
+
+    void Update()
+    {
+        CalculateVelocity();
+        HandleWallSliding();
+
+        controller.Move(velocity * Time.deltaTime);
+    }
+
     public void SetDirectionalInput(Vector2 input)
     {
         directionalInput = input;
@@ -63,32 +72,25 @@ public class Player : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    void HandleWallSliding()
     {
         wallDirX = (controller.collisions.left) ? -1 : 1;
-
-        float targetVelocityX = directionalInput.x * moveSpeed;
-        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing,
-            (controller.collisions.below) ? accelerationTimeGrounded : accelerationTimeAirborne);
-        velocity.y += gravity * Time.deltaTime;
-
         wallSliding = false;
-        if((controller.collisions.left || controller.collisions.right) && !controller.collisions.above && !controller.collisions.below)
+        if ((controller.collisions.left || controller.collisions.right) && !controller.collisions.above && !controller.collisions.below)
         {
             wallSliding = true;
 
-            if(velocity.y < -wallSlideSpeedMax)
+            if (velocity.y < -wallSlideSpeedMax)
             {
                 velocity.y = -wallSlideSpeedMax;
             }
 
-            if(timeToWallUnstick > 0)
+            if (timeToWallUnstick > 0)
             {
                 velocityXSmoothing = 0;
                 velocity.x = 0;
 
-                if(directionalInput.x != wallDirX && directionalInput.x != 0)
+                if (directionalInput.x != wallDirX && directionalInput.x != 0)
                 {
                     timeToWallUnstick -= Time.deltaTime;
                 }
@@ -96,7 +98,7 @@ public class Player : MonoBehaviour
                 {
                     timeToWallUnstick = wallStickTime;
                 }
-                
+
             }
             else
             {
@@ -104,7 +106,7 @@ public class Player : MonoBehaviour
             }
         }
 
-        if(controller.collisions.above || controller.collisions.below)
+        if (controller.collisions.above || controller.collisions.below)
         {
             velocity.y = 0;
         }
@@ -115,12 +117,12 @@ public class Player : MonoBehaviour
         {
             if (wallSliding)
             {
-                if(wallDirX == directionalInput.x)
+                if (wallDirX == directionalInput.x)
                 {
                     velocity.x = -wallDirX * wallJumpClimb.x;
                     velocity.y = wallJumpClimb.y;
                 }
-                else if(directionalInput.x == 0)
+                else if (directionalInput.x == 0)
                 {
                     velocity.x = -wallDirX * wallJumpOff.x;
                     velocity.y = wallJumpOff.y;
@@ -137,7 +139,13 @@ public class Player : MonoBehaviour
                 jumpPressedRemember = 0;
             }
         }
+    }
 
-        controller.Move(velocity * Time.deltaTime);
+    void CalculateVelocity()
+    {
+        float targetVelocityX = directionalInput.x * moveSpeed;
+        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing,
+            (controller.collisions.below) ? accelerationTimeGrounded : accelerationTimeAirborne);
+        velocity.y += gravity * Time.deltaTime;
     }
 }
