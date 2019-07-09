@@ -31,6 +31,10 @@ public class Player : MonoBehaviour
 
     Controller2D controller;
 
+    Vector2 directionalInput;
+    bool wallSliding;
+    int wallDirX;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -40,19 +44,36 @@ public class Player : MonoBehaviour
         minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(gravity) * minJumpHeight);
         print("Gravity: " + gravity + " Jump Velocity: " + maxJumpVelocity);
     }
+    public void SetDirectionalInput(Vector2 input)
+    {
+        directionalInput = input;
+    }
+
+    public void OnJumpInputDown()
+    {
+
+        jumpPressedRemember = jumpPressedRememberTime;
+    }
+
+    public void OnJumpInputUp()
+    {
+        if (minJumpVelocity < velocity.y)
+        {
+            velocity.y = minJumpVelocity;
+        }
+    }
 
     // Update is called once per frame
     void Update()
     {
-        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        int wallDirX = (controller.collisions.left) ? -1 : 1;
+        wallDirX = (controller.collisions.left) ? -1 : 1;
 
-        float targetVelocityX = input.x * moveSpeed;
+        float targetVelocityX = directionalInput.x * moveSpeed;
         velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing,
             (controller.collisions.below) ? accelerationTimeGrounded : accelerationTimeAirborne);
         velocity.y += gravity * Time.deltaTime;
 
-        bool wallSliding = false;
+        wallSliding = false;
         if((controller.collisions.left || controller.collisions.right) && !controller.collisions.above && !controller.collisions.below)
         {
             wallSliding = true;
@@ -67,7 +88,7 @@ public class Player : MonoBehaviour
                 velocityXSmoothing = 0;
                 velocity.x = 0;
 
-                if(input.x != wallDirX && input.x != 0)
+                if(directionalInput.x != wallDirX && directionalInput.x != 0)
                 {
                     timeToWallUnstick -= Time.deltaTime;
                 }
@@ -88,23 +109,18 @@ public class Player : MonoBehaviour
             velocity.y = 0;
         }
 
-        // Sets jumpPressedRemember when the player presses jump
-        if (Input.GetButtonDown("Jump"))
-        {
-            jumpPressedRemember = jumpPressedRememberTime;
-        }
         jumpPressedRemember -= Time.deltaTime;
 
         if (jumpPressedRemember > 0)
         {
             if (wallSliding)
             {
-                if(wallDirX == input.x)
+                if(wallDirX == directionalInput.x)
                 {
                     velocity.x = -wallDirX * wallJumpClimb.x;
                     velocity.y = wallJumpClimb.y;
                 }
-                else if(input.x == 0)
+                else if(directionalInput.x == 0)
                 {
                     velocity.x = -wallDirX * wallJumpOff.x;
                     velocity.y = wallJumpOff.y;
@@ -119,12 +135,6 @@ public class Player : MonoBehaviour
             {
                 velocity.y = maxJumpVelocity;
                 jumpPressedRemember = 0;
-            }
-        }
-        if (Input.GetButtonUp("Jump"))
-        {
-            if(minJumpVelocity < velocity.y) {
-                velocity.y = minJumpVelocity;
             }
         }
 
