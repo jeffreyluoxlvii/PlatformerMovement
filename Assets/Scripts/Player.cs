@@ -20,7 +20,7 @@ public class Player : MonoBehaviour
     public Vector2 wallJumpClimb;
     public Vector2 wallJumpOff;
     public Vector2 wallJumpLeap;
-    public float wallStickTime = 0.25f;
+    public float wallStickTime = 0.10f;
     float timeToWallUnstick;
 
     float maxJumpVelocity;
@@ -53,7 +53,7 @@ public class Player : MonoBehaviour
         velocity.y += gravity * Time.deltaTime;
 
         bool wallSliding = false;
-        if(controller.collisions.left || controller.collisions.right && !controller.collisions.above && !controller.collisions.below)
+        if((controller.collisions.left || controller.collisions.right) && !controller.collisions.above && !controller.collisions.below)
         {
             wallSliding = true;
 
@@ -71,7 +71,11 @@ public class Player : MonoBehaviour
                 {
                     timeToWallUnstick -= Time.deltaTime;
                 }
-                timeToWallUnstick = wallStickTime;
+                else
+                {
+                    timeToWallUnstick = wallStickTime;
+                }
+                
             }
             else
             {
