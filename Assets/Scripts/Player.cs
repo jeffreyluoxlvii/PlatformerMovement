@@ -6,7 +6,8 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     public float timeToJumpApex = 0.4f;
-    public float jumpHeight = 4;
+    public float maxJumpHeight = 4;
+    public float minJumpHeight = 1;
     float accelerationTimeAirborne = 0.2f;
     float accelerationTimeGrounded = 0.1f;
     float moveSpeed = 8;
@@ -22,7 +23,8 @@ public class Player : MonoBehaviour
     public float wallStickTime = 0.25f;
     float timeToWallUnstick;
 
-    float jumpVelocity;
+    float maxJumpVelocity;
+    float minJumpVelocity;
     float gravity;
     Vector3 velocity;
     float velocityXSmoothing;
@@ -33,9 +35,10 @@ public class Player : MonoBehaviour
     void Start()
     {
         controller = GetComponent<Controller2D>();
-        gravity = -(2 * jumpHeight) / Mathf.Pow(timeToJumpApex, 2);
-        jumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
-        print("Gravity: " + gravity + " Jump Velocity: " + jumpVelocity);
+        gravity = -(2 * maxJumpHeight) / Mathf.Pow(timeToJumpApex, 2);
+        maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
+        minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(gravity) * minJumpHeight);
+        print("Gravity: " + gravity + " Jump Velocity: " + maxJumpVelocity);
     }
 
     // Update is called once per frame
@@ -110,11 +113,16 @@ public class Player : MonoBehaviour
             }
             if (controller.collisions.below)
             {
-                velocity.y = jumpVelocity;
+                velocity.y = maxJumpVelocity;
                 jumpPressedRemember = 0;
             }
         }
-
+        if (Input.GetButtonUp("Jump"))
+        {
+            if(minJumpVelocity < velocity.y) {
+                velocity.y = minJumpVelocity;
+            }
+        }
 
         controller.Move(velocity * Time.deltaTime);
     }
